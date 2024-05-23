@@ -237,8 +237,12 @@ namespace EventSchedulePro.Pages.Admin
                                         ToTime = endtime,
                                         StaffNames = StaffNames
                                     };
-                                    _context.Schedules.Add(t);
-                                    _context.SaveChanges();
+                                    var exitedSchedule = _context.Schedules.FirstOrDefault(x => x.Name == t.Name && x.GroupID == t.GroupID && x.Activity == t.Activity && x.Staff == t.Staff && x.StudentLeader == t.StudentLeader && x.Note == t.Note && x.Location == t.Location && x.FromTime == t.FromTime && x.ToTime == t.ToTime);
+                                    if (exitedSchedule == null)
+                                    {
+                                        _context.Schedules.Add(t);
+                                        _context.SaveChanges();
+                                    }
                                 }
                             }
 
