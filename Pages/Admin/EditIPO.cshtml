@@ -1,0 +1,44 @@
+﻿@page
+@using EventSchedulePro.Data.Context
+@model EventSchedulePro.Pages.Admin.EditIPOModel
+@{ 
+}
+<div class="col-md-12">
+    <section>
+        <form id="fintstaff" method="post">
+
+            <div class="form-floating mb-3">
+                <textarea id="tiny" asp-for="Input.MultiHTML"></textarea>
+            </div>
+            <div>
+                <button id="find-staff-submit" type="submit" class="w-100 btn btn-success" asp-page-handler="FindStaff">Submit IPO Content</button>
+            </div>
+        </form>
+    </section>
+</div>
+
+
+@section scripts {
+    <script>
+        tinymce.init({
+            selector: '#tiny',
+            height: 500,
+            menubar: false,
+            plugins: [
+                'advlist autolink lists link image charmap print preview anchor',
+                'searchreplace visualblocks code fullscreen',
+                'insertdatetime media table paste code help wordcount'
+            ],
+            toolbar: 'undo redo | formatselect | ' +
+                'bold italic backcolor | alignleft aligncenter ' +
+                'alignright alignjustify | bullist numlist outdent indent | ' +
+                'removeformat | help',
+            content_style: 'body { font-family:Helvetica,Arial,sans-serif; font-size:14px }',
+            setup: function (editor) {
+                editor.on('change', function () {
+                    editor.save();
+                });
+            }
+        });
+    </script>
+}

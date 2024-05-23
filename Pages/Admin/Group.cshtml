@@ -1,0 +1,151 @@
+﻿@page
+@model EventSchedulePro.Pages.Admin.GroupModel
+@using EventSchedulePro.Data.Context
+@using MySql.Data.MySqlClient
+@inject IHttpContextAccessor _httpContext
+@inject EventDBContext _context;
+@{
+    var StaffList = _context.Staffs.Where(x => x.RoleUser == null || x.RoleUser.CompareTo("3") != 0).ToList();
+    var GroupList = _context.Groups.ToList();
+    var StaffGroup = (from sf in _context.Staffs
+                      join grj in _context.Groups on sf.GroupID equals grj.Id into grs
+                      from gr in grs.DefaultIfEmpty()
+                     select new
+                     {
+                        id = sf.Id,
+                        userName = sf.UserName,
+                        name = gr != null ? "None" : gr.Name,
+                        groupnames = String.IsNullOrEmpty(sf.GroupNames) ? "None" : sf.GroupNames
+                     }).ToList();
+    
+}
+<div class="row">
+    <div class="col-md-4">
+        <section>
+            <form id="account" method="post">
+                <hr />
+                <div asp-validation-summary="ModelOnly" class="text-danger" role="alert"></div>
+                <div class="form-floating mb-3">
+                    <select asp-for="Input.Username" class="form-select" aria-label="Default select example">
+                        <option selected id="-1">Select user</option>
+                        @{
+                            if (StaffList.Any())
+                            {
+                                foreach (var staff in StaffList)
+                                {
+                                    <option value=@staff.Id>@staff.UserName</option>
+                                }
+                            }                       
+                        }
+                    </select>
+                    <label asp-for="Input.Username" class="form-label">UserName</label>
+                    <span asp-validation-for="Input.Username" class="text-danger"></span>
+                </div>
+                <div class="form-floating mb-3">
+                    <select id="choices-multiple-remove-button" class="select_all" multiple asp-for="Input.GroupList">
+                        @{
+                            if (GroupList.Any())
+                            {
+                                foreach (var group in GroupList)
+                                {
+                                    <option value=@group.Id>@group.Name</option>
+                                }
+                            }
+                        }
+                    </select>
+                    <span asp-validation-for="Input.GroupList" class="text-danger"></span>
+                </div>
+                <div>
+                    <button id="login-submit" type="submit" class="w-100 btn btn-primary">Add/Edit user group</button>
+                </div>
+                <div>
+                </div>
+            </form>
+        </section>
+    </div>
+    <div class="col-md-8">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th scope="col">#</th>
+                    <th scope="col">UserName</th>
+                    <th scope="col">Group</th>
+                </tr>
+            </thead>
+            <tbody>
+                @{
+                    if (StaffGroup.Any())
+                    {
+                        foreach (var item in StaffGroup)
+                        {
+                            var tbutton = item.groupnames.Replace(" ", "").Split(",");
+                            bool tbuttonx = false;
+                            <tr>
+                                <th scope="row">@item.id</th>
+                                <td> @item.userName</td>
+                                <td>
+                                    @if (tbutton.Length > 0)
+                                    {
+
+                                        foreach (var itemBut in tbutton)
+                                        {
+                                            if (itemBut == "Blue")
+                                            {
+                                                <button type="button" class="btn btn-outline-primary">Blue</button>
+                                                tbuttonx = true;
+                                            }
+                                            if (itemBut == "Yellow")
+                                            {
+                                                <button type="button" class="btn btn-outline-warning">Yellow</button>
+                                                tbuttonx = true;
+                                            }
+                                            if (itemBut == "Pink")
+                                            {
+                                                <button type="button" class="btn btn-outline-danger">Pink</button>
+                                                tbuttonx = true;
+                                            }
+                                            if (itemBut == "Green")
+                                            {
+                                                <button type="button" class="btn btn-outline-success">Green</button>
+                                                tbuttonx = true;
+                                            }
+                                            if (itemBut == "HSC")
+                                            {
+                                                <button type="button" class="btn btn-outline-secondary">HSC</button>
+                                                tbuttonx = true;
+                                            }
+                                        }
+                                        if (!tbuttonx)
+                                        {
+                                            <button type="button" class="btn btn-outline-dark">None</button>
+                                        }
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    }
+                }
+
+            </tbody>
+        </table>
+    </div>
+</div>
+@section scripts {
+    <script>
+        $(function () {
+            $('#choices-multiple-remove-button').formSelect();
+            $('#choices-multiple-remove-button.select_all').siblings('ul').prepend('<li id=sm_select_all><span>Select All</span></li>');
+            $('li#sm_select_all').on('click', function () {
+                var jq_elem = $(this),
+                    jq_elem_span = jq_elem.find('span'),
+                    select_all = jq_elem_span.text() == 'Select All',
+                    set_text = select_all ? 'Select None' : 'Select All';
+                jq_elem_span.text(set_text);
+                jq_elem.siblings('li').filter(function () {
+                    return $(this).find('input').prop('checked') != select_all;
+                }).click();
+            });
+
+        })
+    </script>
+}

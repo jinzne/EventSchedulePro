@@ -1,0 +1,118 @@
+﻿@page
+@model IndexModel
+@using EventSchedulePro.Data.Context
+@using MySql.Data.MySqlClient
+@inject IHttpContextAccessor _httpContext
+@inject EventDBContext _context;
+@{
+    var userName = _httpContext.HttpContext.Session.GetString("AdminUserName");
+    var userGroup = _httpContext.HttpContext.Session.GetString("UserGroupId");
+    ViewData["Title"] = "Home Schedule";
+    var EventSchedules = (from sc in _context.Schedules
+                          join grj in _context.Groups on sc.GroupID ?? "" equals grj.Id.ToString() into grs
+                          from gr in grs.DefaultIfEmpty()
+                          select new
+                          {
+                              id = sc.Id,
+                              name = sc.Name,
+                              activity = sc.Activity ?? "",
+                              studentLeader = sc.StudentLeader ?? "",
+                              note = sc.Note ?? "",
+                              date = sc.Date,
+                              location = sc.Location,
+                              groupName = gr != null ? gr.Name : "None",
+                              groupId = sc.GroupID,
+                              fromTime = sc.FromTime ?? "",
+                              toTime = sc.ToTime ?? "",
+                              StaffNames = sc.StaffNames
+                          }).ToList();
+    if (EventSchedules.Any())
+    {
+        var staff = _httpContext.HttpContext.Request.Query["Staff"];
+        if (!String.IsNullOrEmpty(staff))
+        {
+            EventSchedules = EventSchedules.Where(x => x.StaffNames.Contains(staff) || x.groupName.Contains("all")).ToList();
+        }
+        else
+        {
+            if (!String.IsNullOrEmpty(userGroup) && String.IsNullOrEmpty(userName))
+            {
+                EventSchedules = EventSchedules.Where(x => userGroup.Contains(x.groupId) || x.groupName.Contains("all")).ToList();
+            }
+        }
+    }
+
+}
+
+<center>
+    <h3>In-Person Orientation Staff Schedule @DateTime.Now.ToString("yyyy") </h3>
+    <h4>@DateTime.Now.ToString("dddd dd MMMM yyyy") - <button class="btn btn-outline-primary" id="printable">Print data</button></h4>
+</center>
+<div class="row">
+    <div class="col-md-12">
+        <table border="1" class="table" id="printTable">
+            <thead>
+                <tr>
+                    <th scope="col" style="width:15%">Time</th>
+                    <th scope="col" style="width:70%"><center><b>Activity</b> / <a>Notes</a> / <a style="color:deepskyblue">Staff</a> / <a style="color:green">Student Leaders</a></center></th>
+                    <th scope="col" style="width:5%">Group</th>
+                    <th scope="col" style="width:10%">Location</th>
+                    <!--@if (!String.IsNullOrEmpty(userName))
+                    {
+                        <th scope="col" style="width:5%">Group</th>
+                        <th scope="col" style="width:10%">Location</th>
+                    }
+                    else
+                    {
+                        <th scope="col" style="width:15%">Location</th>
+                    }-->
+                </tr>
+            </thead>
+            <tbody>
+                @{
+                    if (EventSchedules.Any())
+                    {
+                        foreach (var item in EventSchedules)
+                        {
+                            string class_ge = "table-primary";
+                            var groupuser = @item.groupName.ToLower();
+                            class_ge = groupuser.IndexOf("blue") != -1 ? "btn btn-outline-primary" : groupuser.IndexOf("yellow") != -1 ? "btn btn-outline-warning" : groupuser.IndexOf("pink") != -1 ? "btn btn-outline-danger" : groupuser.IndexOf("green") != -1 ? "btn btn-outline-success" : groupuser.IndexOf("hsc") != -1 ? "btn btn-outline-secondary" : "btn btn-outline-dark";
+                            <tr>
+                                <td>
+                                    @item.fromTime - @item.toTime
+
+                                </td>
+                                <td>
+                                    @item.name<Br />
+                                    Activity: <b>@item.activity</b>
+                                    <Br />Notes: <a>@item.note</a>
+                                    <Br />Staff: <a style="color:deepskyblue">@item.StaffNames</a>
+                                    <Br />Student Leaders: <a style="color:green">@item.studentLeader</a>
+                                </td>
+                                <td><center><button class="@class_ge" style="">@item.groupName</button></center></td>
+                                <td> @item.location</td>
+                            </tr>
+                        }
+                   }                
+                }
+
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@section scripts {
+<script>
+    function printData() {
+        var divToPrint = document.getElementById("printTable");
+        newWin = window.open("");
+        newWin.document.write(divToPrint.outerHTML);
+        newWin.print();
+        newWin.close();
+    }
+
+        $('#printable').on('click', function () {
+        printData();
+    })
+</script>
+}
