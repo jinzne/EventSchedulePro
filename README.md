@@ -30,8 +30,19 @@ replace this apikey into <script src="https://cdn.tiny.cloud/1/{apikey}/tinymce/
 
 + Upload sourcecode into github.
 + Back to https://render.com/, create new Webservice
-![10](https://github.com/jinzne/EventSchedulePro/assets/122944917/ff7ff062-f61a-4484-ac28-6a28ab0ead38)
-![9](https://github.com/jinzne/EventSchedulePro/assets/122944917/19eca6a5-0825-49e0-8fe7-403c0504c5c8)
 ![8](https://github.com/jinzne/EventSchedulePro/assets/122944917/c34c1314-c08d-44b0-83fc-e993e80f44da)
+![9](https://github.com/jinzne/EventSchedulePro/assets/122944917/19eca6a5-0825-49e0-8fe7-403c0504c5c8)
+![10](https://github.com/jinzne/EventSchedulePro/assets/122944917/ff7ff062-f61a-4484-ac28-6a28ab0ead38)
+Authorize Render access into github
+![image](https://github.com/jinzne/EventSchedulePro/assets/122944917/1890c627-e402-40dd-ae8c-95d4b38b2ae3)
+![image](https://github.com/jinzne/EventSchedulePro/assets/122944917/e560379a-9c9b-4956-8244-f2ffa215079e)
+![image](https://github.com/jinzne/EventSchedulePro/assets/122944917/c61d5e22-c871-498c-a88b-35da0246ed3f)
+
 Connect to git project from prev step.
+![image](https://github.com/jinzne/EventSchedulePro/assets/122944917/5121965f-be43-4e48-81c4-a602029ff470)
+![image](https://github.com/jinzne/EventSchedulePro/assets/122944917/64b789a9-bebe-45e8-93bb-c59f5a5d62ac)
+Click [CREATE WEB SERVICE]
+![image](https://github.com/jinzne/EventSchedulePro/assets/122944917/d8f59c02-2b3d-4ce1-8812-3022a680ce92)
+
+
 
