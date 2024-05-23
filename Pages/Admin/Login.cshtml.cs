@@ -60,7 +60,7 @@ namespace EventSchedulePro.Pages.Authen
                 {
                     HttpContext.Session.SetString("AdminUserName", user.UserName);
                     HttpContext.Session.SetString("AdminUserId", user.Id.ToString());
-                    HttpContext.Session.SetString("AdminUserGroupId", user.GroupID?.ToString());
+                    HttpContext.Session.SetString("AdminUserGroupId",(user.GroupID != null ? user.GroupID?.ToString() : ""));
                     HttpContext.Session.SetString("AdminUserRole", user.RoleUser);
                 }
                 return new RedirectToPageResult("/Index");
@@ -77,7 +77,7 @@ namespace EventSchedulePro.Pages.Authen
                 tadmin.PasswordHash = Base64Encode("Admin@.132");
                 tadmin.RoleUser = "3";
                 _context.Staffs.Add(tadmin);
-                await _context.SaveChangesAsync();
+                _context.SaveChanges();
             }
         }
     }
