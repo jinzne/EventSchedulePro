@@ -52,7 +52,7 @@ namespace EventSchedulePro.Pages.Authen
         {
             returnUrl ??= Url.Content("~/");
             var t = Input.Username + Input.Password + Input.RememberMe;
-            awwait checkAdmin();
+            checkAdmin();
             var user = _context.Staffs.FirstOrDefault(x => x.UserName == Input.Username && x.PasswordHash == Base64Encode(Input.Password) && x.RoleUser == "3");
             if (user != null)
             {
