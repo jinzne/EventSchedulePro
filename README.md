@@ -39,11 +39,11 @@ Authorize Render access into github
 ![image](https://github.com/jinzne/EventSchedulePro/assets/122944917/c61d5e22-c871-498c-a88b-35da0246ed3f)
 
 Connect to git project from prev step.
-![Uploading image.png…]()
+![image](https://github.com/jinzne/EventSchedulePro/assets/122944917/e1295a6a-7db5-47e0-9d82-041668768c91)
 ![image](https://github.com/jinzne/EventSchedulePro/assets/122944917/64b789a9-bebe-45e8-93bb-c59f5a5d62ac)
 Click [CREATE WEB SERVICE]
 ![image](https://github.com/jinzne/EventSchedulePro/assets/122944917/d8f59c02-2b3d-4ce1-8812-3022a680ce92)
-![Uploading image.png…]()
+![image](https://github.com/jinzne/EventSchedulePro/assets/122944917/39dde980-6622-4a0d-9d51-b8281a419551)
 
 DONE.
 
