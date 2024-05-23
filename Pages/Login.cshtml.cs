@@ -7,6 +7,7 @@ using MySql.Data.MySqlClient;
 using Org.BouncyCastle.Asn1.X500;
 using System.ComponentModel.DataAnnotations;
 using System.Runtime.Intrinsics.Arm;
+using System.Text.RegularExpressions;
 
 namespace EventSchedulePro.Pages
 {
@@ -70,6 +71,12 @@ namespace EventSchedulePro.Pages
                 return Page();
             }
             HttpContext.Session.SetString("Staff", Input.Staff);
+            var staff = _context.Staffs.FirstOrDefault(x => x.UserName.Trim() == Input.Staff.Trim());
+            if (staff != null)
+            {
+                string GroupIds = Regex.Replace(staff.GroupIds ?? "", @"\s+", "");
+                HttpContext.Session.SetString("StaffGroupId", GroupIds);
+            }
             return new RedirectToPageResult("/Index", new { Staff = Input.Staff });
         }
     }

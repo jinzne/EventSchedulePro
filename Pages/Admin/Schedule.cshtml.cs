@@ -120,11 +120,11 @@ namespace EventSchedulePro.Pages.Admin
                     {
                         CultureInfo enUS = new CultureInfo("en-US");
                         DateTime dateValue;
-                        if (DateTime.TryParseExact(Input.TimeSchedule, "MM/dd/yyyy", enUS,
+                        if (DateTime.TryParseExact(Input.TimeSchedule, "yyyy-MM-dd", enUS,
                                   DateTimeStyles.None, out dateValue))
                         {
                             schedule.Name = Input.Name;
-                            schedule.Date = dateValue.ToString("MM/dd/yyyy");
+                            schedule.Date = dateValue.ToString("yyyy-MM-dd");
                             schedule.GroupID = Input.Group;
                             schedule.Activity = Input.Activity;
                             schedule.Staff = stafidList;

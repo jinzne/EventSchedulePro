@@ -7,6 +7,7 @@
 @{
     var userName = _httpContext.HttpContext.Session.GetString("AdminUserName");
     var userGroup = _httpContext.HttpContext.Session.GetString("UserGroupId");
+    var staffGroup = _httpContext.HttpContext.Session.GetString("StaffGroupId");
     ViewData["Title"] = "Home Schedule";
     var EventSchedules = (from sc in _context.Schedules
                           join grj in _context.Groups on sc.GroupID ?? "" equals grj.Id.ToString() into grs
@@ -29,15 +30,16 @@
     if (EventSchedules.Any())
     {
         var staff = _httpContext.HttpContext.Request.Query["Staff"];
-        if (!String.IsNullOrEmpty(staff))
+        if (!String.IsNullOrEmpty(staff) && !String.IsNullOrEmpty(staffGroup))
         {
-            EventSchedules = EventSchedules.Where(x => x.StaffNames.Contains(staff) || x.groupName.Contains("all")).ToList();
+            var ListGroup = staffGroup.Split(",");
+            EventSchedules = EventSchedules.Where(x => x.StaffNames.Contains(staff) || x.groupName.ToLower().Contains("all") || ListGroup.Contains(x.groupId)).ToList();
         }
         else
         {
             if (!String.IsNullOrEmpty(userGroup) && String.IsNullOrEmpty(userName))
             {
-                EventSchedules = EventSchedules.Where(x => userGroup.Contains(x.groupId) || x.groupName.Contains("all")).ToList();
+                EventSchedules = EventSchedules.Where(x => userGroup.Contains(x.groupId) || x.groupName.ToLower().Contains("all")).ToList();
             }
         }
     }
