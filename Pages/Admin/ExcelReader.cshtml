@@ -22,6 +22,7 @@
         @{
                 if (tlist != null && tlist.Count > 0)
             {
+                try {
                 @for (int i = 1; i < tlist.Count(); i++)
                 {
                     <li>
@@ -37,6 +38,7 @@
                         </div>
                     </li>
                 }
+                } catch(Exception){}
             }
         }
     </ul>

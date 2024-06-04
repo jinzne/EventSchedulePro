@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 using MySql.Data.MySqlClient;
+using System.Data;
 using System.Globalization;
 using System.Net.WebSockets;
 
@@ -29,31 +30,35 @@ namespace EventSchedulePro.Pages.Admin
             {
                 return new RedirectToPageResult("/Index");
             }
-            System.Text.Encoding.RegisterProvider(System.Text.CodePagesEncodingProvider.Instance);
-            var uploadFol = $"{Directory.GetCurrentDirectory()}\\wwwroot\\Uploads";
-            var filepat = Path.Combine(uploadFol, FileNameExample);
-            if (System.IO.File.Exists(filepat))
+            try
             {
-                using (var stream = System.IO.File.Open(filepat, FileMode.Open, FileAccess.Read))
+                System.Text.Encoding.RegisterProvider(System.Text.CodePagesEncodingProvider.Instance);
+                var uploadFol = $"{Directory.GetCurrentDirectory()}\\wwwroot\\Uploads";
+                var filepat = Path.Combine(uploadFol, FileNameExample);
+                if (System.IO.File.Exists(filepat))
                 {
-                    var exceldata = new List<List<object>>();
-                    using (var reader = ExcelReaderFactory.CreateReader(stream))
+                    using (var stream = System.IO.File.Open(filepat, FileMode.Open, FileAccess.Read))
                     {
-                        do
+                        var exceldata = new List<List<object>>();
+                        using (var reader = ExcelReaderFactory.CreateReader(stream))
                         {
-                            while (reader.Read())
+                            do
                             {
-                                var rowData = new List<object>();
-                                for (int i = 0; i < reader.FieldCount; i++)
-                                    rowData.Add(reader.GetValue(i));
-                                exceldata.Add(rowData);
-                            }
+                                while (reader.Read())
+                                {
+                                    var rowData = new List<object>();
+                                    for (int i = 0; i < reader.FieldCount; i++)
+                                        rowData.Add(reader.GetValue(i));
+                                    exceldata.Add(rowData);
+                                }
 
-                        } while (reader.NextResult());
+                            } while (reader.NextResult());
+                        }
+                        ViewData["ExcelData"] = exceldata;
                     }
-                    ViewData["ExcelData"] = exceldata;
                 }
             }
+            catch (Exception) { }
             return Page();
         }
 
@@ -85,8 +90,34 @@ namespace EventSchedulePro.Pages.Admin
                     using (var stream = System.IO.File.Open(filepat, FileMode.Open, FileAccess.Read))
                     {
                         var exceldata = new List<List<object>>();
+                        var groupdata = new List<List<object>>();
                         using (var reader = ExcelReaderFactory.CreateReader(stream))
                         {
+
+                            var firstsheet = reader.AsDataSet().Tables[0];
+                            if (firstsheet != null && firstsheet.Rows.Count > 0)
+                            {
+                                foreach (DataRow dr in firstsheet.Rows)
+                                {
+                                    var rowData = new List<object>();
+                                    for (int i = 0; i <= 6; i++)
+                                        rowData.Add(dr[i]);
+                                    exceldata.Add(rowData);
+                                }
+                            }
+                            var secondsheet = reader.AsDataSet().Tables[1];
+                            if (secondsheet != null && secondsheet.Rows.Count > 0)
+                            {
+                                foreach (DataRow dr in secondsheet.Rows)
+                                {
+                                    var rowData = new List<object>();
+                                    for (int i = 0; i <= 2; i++)
+                                        rowData.Add(dr[i]);
+                                    groupdata.Add(rowData);
+                                }
+                            }
+                            /*
+                            
                             do
                             {
                                 while (reader.Read())
@@ -98,8 +129,11 @@ namespace EventSchedulePro.Pages.Admin
                                 }
 
                             } while (reader.NextResult());
+                            */
                         }
                         ViewData["ExcelData"] = exceldata;
+                        if (groupdata.Any())
+                            saveGroupStaff(groupdata);
                         saveFileIntoDatabase(exceldata);
                     }
 
@@ -249,6 +283,69 @@ namespace EventSchedulePro.Pages.Admin
                         }
                     }
                     //Insert Schedule
+                }
+            }
+        }
+        private async void saveGroupStaff(List<List<object>> o)
+        {
+            for (int i = 1; i < o.Count; i++)
+            {
+                string groupName = o[i][0]?.ToString();
+                string StaffName = o[i][1]?.ToString();
+                string groupReName = o[i][2]?.ToString();
+                if (!String.IsNullOrEmpty(groupName))
+                {
+
+                    //Check group not exited then insert
+                    {
+                        var group = _context.Groups.FirstOrDefault(x => x.Name.ToLower() == groupName.ToLower().Trim());
+                        if (group == null)
+                        {
+                            Group newItem = new Group { Name = groupName.Trim(), Detail = groupName.Trim() };
+                            _context.Groups.Add(newItem);
+                            _context.SaveChanges();
+                        }
+                    }
+
+                    //Check Staff not exited then insert
+                    {
+                        if (!string.IsNullOrEmpty(StaffName))
+                        {
+                            var StaffList = StaffName.Trim().Split(",");
+                            var group = _context.Groups.FirstOrDefault(x => x.Name.ToLower() == groupName.ToLower().Trim());
+                            foreach (var item in StaffList)
+                            {
+                                var staff = _context.Staffs.FirstOrDefault(x => x.UserName == item.Trim());
+                                if (staff == null)
+                                {
+                                    Staff newStaff = new Staff { UserName = item.Trim(), GroupID = group.Id, GroupIds = group.Id + ",", GroupNames = group.Name + ",", RoleUser = "1", PasswordHash = Base64Encode("1") };
+                                    _context.Add(newStaff);
+                                    _context.SaveChanges();
+                                }
+                                else
+                                {
+                                    var Staffgroup = staff.GroupIds.Trim().Split(",");
+                                    bool groupExists = false;
+                                    foreach (var itemc in Staffgroup)
+                                    {
+                                        if (itemc.Trim().CompareTo(group.Id.ToString()) == 0)
+                                        {
+                                            groupExists = true;
+                                            break;
+                                        }
+                                    }
+                                    if (!groupExists)
+                                    {
+                                        staff.GroupIds += group.Id + ",";
+                                        staff.GroupNames += group.Name + ",";
+                                        _context.SaveChanges();
+                                    }
+                                }
+                            }
+
+
+                        }
+                    }
                 }
             }
         }
