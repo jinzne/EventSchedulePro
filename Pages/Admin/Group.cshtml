@@ -5,19 +5,7 @@
 @inject IHttpContextAccessor _httpContext
 @inject EventDBContext _context;
 @{
-    var StaffList = _context.Staffs.Where(x => x.RoleUser == null || x.RoleUser.CompareTo("3") != 0).ToList();
     var GroupList = _context.Groups.ToList();
-    var StaffGroup = (from sf in _context.Staffs
-                      join grj in _context.Groups on sf.GroupID equals grj.Id into grs
-                      from gr in grs.DefaultIfEmpty()
-                     select new
-                     {
-                        id = sf.Id,
-                        userName = sf.UserName,
-                        name = gr != null ? "None" : gr.Name,
-                        groupnames = String.IsNullOrEmpty(sf.GroupNames) ? "None" : sf.GroupNames
-                     }).ToList();
-    
 }
 <div class="row">
     <div class="col-md-4">
@@ -25,38 +13,18 @@
             <form id="account" method="post">
                 <hr />
                 <div asp-validation-summary="ModelOnly" class="text-danger" role="alert"></div>
-                <div class="form-floating mb-3">
-                    <select asp-for="Input.Username" class="form-select" aria-label="Default select example">
-                        <option selected id="-1">Select user</option>
-                        @{
-                            if (StaffList.Any())
-                            {
-                                foreach (var staff in StaffList)
-                                {
-                                    <option value=@staff.Id>@staff.UserName</option>
-                                }
-                            }                       
-                        }
-                    </select>
-                    <label asp-for="Input.Username" class="form-label">UserName</label>
-                    <span asp-validation-for="Input.Username" class="text-danger"></span>
+                <div class="form-floating mb-3" style="visibility:hidden; height:0px">
+                    <input asp-for="Input.Id" class="form-control" autocomplete="Id" aria-required="true" placeholder="Id" />
+                    <label asp-for="Input.Id" class="form-label">Id</label>
+                    <span asp-validation-for="Input.Id" class="text-danger"></span>
                 </div>
                 <div class="form-floating mb-3">
-                    <select id="choices-multiple-remove-button" class="select_all" multiple asp-for="Input.GroupList">
-                        @{
-                            if (GroupList.Any())
-                            {
-                                foreach (var group in GroupList)
-                                {
-                                    <option value=@group.Id>@group.Name</option>
-                                }
-                            }
-                        }
-                    </select>
-                    <span asp-validation-for="Input.GroupList" class="text-danger"></span>
+                    <input asp-for="Input.Name" class="form-control" autocomplete="Name" aria-required="true" placeholder="Name" />
+                    <label asp-for="Input.Name" class="form-label">Name</label>
+                    <span asp-validation-for="Input.Name" class="text-danger"></span>
                 </div>
                 <div>
-                    <button id="login-submit" type="submit" class="w-100 btn btn-primary">Add/Edit user group</button>
+                    <button id="login-submit" type="submit" class="w-100 btn btn-primary" asp-page-handler="Save">Save</button>
                 </div>
                 <div>
                 </div>
@@ -67,59 +35,27 @@
         <table class="table">
             <thead>
                 <tr>
-                    <th scope="col">#</th>
-                    <th scope="col">UserName</th>
-                    <th scope="col">Group</th>
+                    <th scope="col">Group ID</th>
+                    <th scope="col">Group Name</th>
+                    <th scope="col">Action</th>
                 </tr>
             </thead>
             <tbody>
                 @{
-                    if (StaffGroup.Any())
+                    if (GroupList.Any())
                     {
-                        foreach (var item in StaffGroup)
+                        foreach (var group in GroupList)
                         {
-                            var tbutton = item.groupnames.Replace(" ", "").Split(",");
-                            bool tbuttonx = false;
-                            <tr>
-                                <th scope="row">@item.id</th>
-                                <td> @item.userName</td>
+                             <tr>
+                                <th scope="row">@group.Id</th>
+                                <td> @group.Name</td>
                                 <td>
-                                    @if (tbutton.Length > 0)
-                                    {
-
-                                        foreach (var itemBut in tbutton)
-                                        {
-                                            if (itemBut == "Blue")
-                                            {
-                                                <button type="button" class="btn btn-outline-primary">Blue</button>
-                                                tbuttonx = true;
-                                            }
-                                            if (itemBut == "Yellow")
-                                            {
-                                                <button type="button" class="btn btn-outline-warning">Yellow</button>
-                                                tbuttonx = true;
-                                            }
-                                            if (itemBut == "Pink")
-                                            {
-                                                <button type="button" class="btn btn-outline-danger">Pink</button>
-                                                tbuttonx = true;
-                                            }
-                                            if (itemBut == "Green")
-                                            {
-                                                <button type="button" class="btn btn-outline-success">Green</button>
-                                                tbuttonx = true;
-                                            }
-                                            if (itemBut == "HSC")
-                                            {
-                                                <button type="button" class="btn btn-outline-secondary">HSC</button>
-                                                tbuttonx = true;
-                                            }
-                                        }
-                                        if (!tbuttonx)
-                                        {
-                                            <button type="button" class="btn btn-outline-dark">None</button>
-                                        }
-                                    }
+                                    <form id="Delete" method="post">
+                                        <input type="hidden" name="Id" value="@group.Id" />
+                                        <input type="hidden" name="Name" value="@group.Name" />
+                                        <button type="submit" class="btn btn-success" value="Edit" asp-page-handler="Edit">Edit</button>
+                                        <button type="submit" class="btn btn-danger" value="Delete" asp-page-handler="Delete">Delete</button>
+                                    </form>
                                 </td>
                             </tr>
                         }
@@ -130,22 +66,3 @@
         </table>
     </div>
 </div>
-@section scripts {
-    <script>
-        $(function () {
-            $('#choices-multiple-remove-button').formSelect();
-            $('#choices-multiple-remove-button.select_all').siblings('ul').prepend('<li id=sm_select_all><span>Select All</span></li>');
-            $('li#sm_select_all').on('click', function () {
-                var jq_elem = $(this),
-                    jq_elem_span = jq_elem.find('span'),
-                    select_all = jq_elem_span.text() == 'Select All',
-                    set_text = select_all ? 'Select None' : 'Select All';
-                jq_elem_span.text(set_text);
-                jq_elem.siblings('li').filter(function () {
-                    return $(this).find('input').prop('checked') != select_all;
-                }).click();
-            });
-
-        })
-    </script>
-}
